@@ -17,45 +17,41 @@ class Server {
     int socket_desc {-1};
     int client_desc {-1};
     struct addrinfo* info;
-    char* buffer {};
 
 public:
     Server(int addr_family, int socket_type, int flags, int port) {
-        buffer = (char*)malloc(BUFF_SIZE);
-        socket_desc = socket(PF_INET, SOCK_STREAM, 0);
         struct addrinfo hints = {
             .ai_flags = flags,
             .ai_family = addr_family,
             .ai_socktype = socket_type
         };
+        socket_desc = socket(hints.ai_family, hints.ai_socktype, flags);
         sock_syscall(getaddrinfo, nullptr, std::to_string(port).c_str(), &hints, &info);
         sock_syscall(bind, socket_desc, info->ai_addr, info->ai_addrlen);
         sock_syscall(listen, socket_desc, 10);
     }
 
     void serve() {
-        struct sockaddr client_addr;
-        socklen_t client_len;
-
+        struct sockaddr client_addr {};
+        socklen_t client_len { 0 };
+        std::vector<char> buffer(BUFF_SIZE, '\0');
         while(1) {
             client_desc = accept(socket_desc, &client_addr, &client_len);
             if (client_desc < 0) { throw std::runtime_error(strerror(errno)); }
-            int buff_size = recv(client_desc, buffer, BUFF_SIZE, 0);
+            int buff_size = recv(client_desc, buffer.data(), BUFF_SIZE, 0);
             if (buff_size > 0) {
-                std::cout << buffer << "\n";
-                memset(buffer, 0, buff_size);
-
+                std::cout << std::string_view(buffer.data(), buff_size) << "\n";
                 int ret = send(client_desc, "200", 3, 0);
                 if (ret < 0) { throw std::runtime_error(strerror(errno)); }
+                // TODO: Continuously serve requests
                 break;
             }
         }
     }
 
     ~Server() {
-        close(client_desc);
-        close(socket_desc);
-        free(buffer);
+        if (client_desc >= 0) { close(client_desc); }
+        if (socket_desc >= 0) { close(socket_desc); }
     }
 };
 
