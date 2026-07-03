@@ -1,8 +1,8 @@
 CXX	  = clang++
-CXX_FLAGS = -std=c++20 -g -Wall -Werror -Wunused
+CXX_FLAGS = -std=c++20
 
 
-matchbook:
+matchbook: main.cpp
 	$(CXX) $(CXX_FLAGS) main.cpp -o matchbook
 
 clean:
