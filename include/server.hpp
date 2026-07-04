@@ -9,6 +9,7 @@ class Server : public Peer {
 public:
     Server(int, int, int, int);
     void operator()() override;
+    void serve_conn(int desc);
     ~Server();
 };
 

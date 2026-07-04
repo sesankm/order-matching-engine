@@ -2,7 +2,6 @@
 #define CLIENT_H
 
 #include "peer.hpp"
-#include <cstdio>
 
 class Client : public Peer {
 public:
