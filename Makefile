@@ -1,10 +1,15 @@
-CXX	  = clang++
-CXX_FLAGS = -std=c++20 -g -Iinclude
-SRC	  = $(wildcard src/*.cpp)
+CXX	   = clang++
+CXX_FLAGS  = -std=c++20 -g -Iinclude
+SERVER_SRC = src/peer.cpp src/server.cpp
+CLIENT_SRC = src/peer.cpp src/client.cpp
 
+all: server client
 
-matchbook: $(SRC)
-	$(CXX) $(CXX_FLAGS) $(SRC) -o matchbook
+server: $(SERVER_SRC) src/run_server.cpp
+	$(CXX) $(CXX_FLAGS)  $(SERVER_SRC) src/run_server.cpp -o server
+
+client: $(CLIENT_SRC) src/run_client.cpp
+	$(CXX) $(CXX_FLAGS) $(CLIENT_SRC) src/run_client.cpp -o client
 
 clean:
-	rm -rf matchbook matchbook.dSYM
+	rm -rf server client *.dSYM
