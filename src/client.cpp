@@ -1,5 +1,6 @@
 #include "client.hpp"
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <thread>
 
@@ -17,28 +18,32 @@ void Client::operator()() {
 
     std::atomic<int> active_threads { 0 };
 
-    do {
+    while(1) {
         std::cout << ">> ";
         std::getline(std::cin, input);
         if (input.size() <= 0) { break; }
 
-        std::thread {
-            [this, input, &total_bytes_recv, &total_bytes_sent, &total_messages_sent, &active_threads]() {
-                ++active_threads;
-                char buffer[BUFF_SIZE];
-                size_t sent_size = send(socket_desc, input.data(), input.size(), 0);
-                /* This is kind of a socket race condition. Current thread might read a message
-                   that the server sent in response to a different thread's send call.
-                   It's only used to track total data sent/recv, so it wont really cause issues. */
-                size_t recv_size = recv(socket_desc, buffer, BUFF_SIZE, 0);
-                total_bytes_recv += recv_size;
-                total_bytes_sent += sent_size;
-                ++total_messages_sent;
-                --active_threads;
-            }
-        }.detach();
+        ++active_threads;
+        try {
+            std::thread {
+                [this, input, &total_bytes_recv, &total_bytes_sent, &total_messages_sent, &active_threads]() {
+                    char buffer[BUFF_SIZE];
+                    size_t sent_size = send(socket_desc, input.data(), input.size(), 0);
+                    /* This is kind of a socket race condition. Current thread might read a message
+                    that the server sent in response to a different thread's send call.
+                    It's only used to track total data sent/recv, so it wont really cause issues. */
+                    size_t recv_size = recv(socket_desc, buffer, BUFF_SIZE, 0);
+                    total_bytes_recv += recv_size;
+                    total_bytes_sent += sent_size;
+                    ++total_messages_sent;
+                    --active_threads;
+                }
+            }.detach();
+        } catch (...) {
+            --active_threads;
+        }
 
-    } while(input.size());
+    }
 
     while (active_threads > 0) {
         std::cout << "Waiting for active threads to complete...\n";
