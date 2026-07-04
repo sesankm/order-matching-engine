@@ -1,0 +1,11 @@
+#include <sys/socket.h>
+class Client {
+    int ret;
+    struct sockaddr* write_sock {};
+    constexpr static addrinfo info {};
+
+public:
+    Client(int addr_family, int socket_type, int flags, int port) {
+
+    }
+}
