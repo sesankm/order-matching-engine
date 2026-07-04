@@ -19,7 +19,6 @@ public:
 protected:
     int socket_desc {-1};
     struct addrinfo* info;
-    char* buffer;
 
     template <typename ... T> void sock_syscall(auto*, T...);
 };

@@ -2,6 +2,7 @@
 
 Client::Client(int addr_family, int socket_type, int flags, int port)
     : Peer { addr_family, socket_type, flags, port } {
+    buffer = (char*)malloc(sizeof(BUFF_SIZE));
     Peer::sock_syscall(connect, socket_desc, info->ai_addr, info->ai_addrlen);
 }
 
