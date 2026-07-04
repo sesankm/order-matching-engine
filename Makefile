@@ -1,9 +1,10 @@
 CXX	  = clang++
-CXX_FLAGS = -std=c++20 -g
+CXX_FLAGS = -std=c++20 -g -Iinclude
+SRC	  = $(wildcard src/*.cpp)
 
 
-matchbook: main.cpp client.cpp
-	$(CXX) $(CXX_FLAGS) main.cpp client.cpp -o matchbook
+matchbook: $(SRC)
+	$(CXX) $(CXX_FLAGS) $(SRC) -o matchbook
 
 clean:
 	rm -rf matchbook matchbook.dSYM
