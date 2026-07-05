@@ -1,6 +1,10 @@
 #ifndef ORDER_H
 #define ORDER_H
 
+#include <cstdint>
+
+static const int PRICE_PRCSN = 4;
+
 enum class OType {
     LIMIT,
     MARKET
@@ -13,16 +17,18 @@ enum class OSide {
 
 class Order {
 public:
-    Order();
+    Order(float, long, OType, OSide);
 
 private:
-    long  m_order_id;
     long  m_quantity;
-    float m_price;
     OType m_type;
     OSide m_side;
 
-    long long timestamp;
+    std::uint64_t m_price;
+    std::uint64_t m_order_id;
+    std::uint64_t m_timestamp;
+
+    std::uint64_t generate_id();
 };
 
 #endif
