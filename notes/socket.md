@@ -2,25 +2,25 @@
 
 ## listening side
 
-- `socket()` - Kernel creates a SocketControlBlock struct for listening socket.
-- `bind()` - Kernel attaches port number/addr to SocketControlBlock
+- `socket()` - Kernel creates a `struct sock` for listening socket.
+- `bind()` - Kernel attaches port number/addr to `struct sock`
 - `listen()` - Creates SYN and Accept queues.
-  - Whenever kernel recieves a SYN packet, it checks list of listening SocketControlBlocks.
+  - Whenever kernel recieves a SYN packet, it checks list of listening `struct sock`s
   - If a struct exists for the combination of port/addr in SYN, kernel sends back a SYNACK.
-  - Kernel also adds a request_sock entry into the SYN queue.
-  - When kernel recieves the final ACK packet, it promotes request_sock from SYN queue to a full SocketControlBlock in the accept queue. (deleted from SYN queue, added to accept queue)
+  - Kernel also adds a `request_sock` struct entry into the SYN queue.
+  - When kernel recieves the final ACK packet, it promotes `request_sock` from SYN queue to a full `struct sock` in the accept queue. (deleted from SYN queue, added to accept queue)
   - *this configures the listening socket*
 - `accept()` - this waits for active connections.
   - when client connects, kernel peels off an entry from accept queue and returns descriptor to userspace
   - if nothing is in the accept queue, this process sleeps and gets woken up by kernel when something enters accept queue
-- `close(fd)` - closes the SocketControlBlock for given descriptor.
+- `close(fd)` - closes the socket/frees struct for given descriptor.
   - listening side has one listening socket, and one socket per active connection.
 
 ## connecting side
 
-- `socket()` - Kernel creates an empty SocketControlBlock. Unlike listening side, this is just an empty struct that does nothing.
+- `socket()` - Kernel creates an empty `struct sock`. Unlike listening side, this is just an empty struct that does nothing.
 - `connect()` - initiates the 3 way handshake.
-  - after sending the SYN, kernel fills in the empty SocketControlBlock from previous step
+  - after sending the SYN, kernel fills in the empty `struct sock` from previous step
     - dest port/addr
     - kernel assigned local port/addr
     - state gets updated from TCP_CLOSE to TCP_SYN_SENT
