@@ -18,11 +18,13 @@ enum class OSide {
 class Order {
 public:
     Order(float, long, OType, OSide);
+    static std::uint64_t get_price(float price);
+
+    long m_quantity;
     std::uint64_t m_order_id;
     std::uint64_t m_price;
 
 private:
-    long  m_quantity;
     OType m_type;
     OSide m_side;
 
