@@ -45,11 +45,13 @@ void Lob::updateOrder(order_id id) {
 
 
 std::uint64_t Lob::getBestBid() const {
+    if (asks.empty()) return -1;
     std::list<Order> f = (*bids.begin()).second;
     return f.front().m_order_id;
 }
 
 std::uint64_t Lob::getBestAsk() const {
+    if (asks.empty()) return -1;
     std::list<Order> f = (*asks.begin()).second;
     return f.front().m_order_id;
 }
