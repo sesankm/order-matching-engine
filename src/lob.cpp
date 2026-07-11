@@ -2,6 +2,7 @@
 #include "order.hpp"
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 Lob::Lob() {}
 
@@ -27,11 +28,35 @@ std::uint64_t Lob::addOrder(float price, long quantity, OType type, OSide side) 
 
 void Lob::cancelOrder(order_id id) {
     Entry e = lookup.at(id);
-    if (e.side == OSide::BUY)
+    if (e.side == OSide::BUY) {
         bids.at(e.b).erase(e.it);
-    else
+    }
+    else {
         asks.at(e.b).erase(e.it);
+    }
     lookup.erase(id);
+}
+
+/* TODO: This is really bad.
+   Come up with a better solution for this later */
+void Lob::cleanFilledOrders() {
+    auto it = bids.begin();
+    while (it != bids.end()) {
+        if (it->second.empty()) {
+            it = bids.erase(it);
+        } else {
+            it++;
+        }
+    }
+
+    auto it2 = asks.begin();
+    while (it2 != asks.end()) {
+        if (it2->second.empty()) {
+            it2 = bids.erase(it);
+        } else {
+            it2++;
+        }
+    }
 }
 
 Order Lob::getOrder(order_id id) const {
@@ -43,15 +68,14 @@ void Lob::updateOrder(order_id id) {
     throw std::runtime_error("Not implemented yet");
 }
 
-
 std::uint64_t Lob::getBestBid() const {
-    if (asks.empty()) return -1;
+    if (bids.empty()) return EMPTY_BID;
     std::list<Order> f = (*bids.begin()).second;
-    return f.front().m_order_id;
+    return f.front().m_price;
 }
 
 std::uint64_t Lob::getBestAsk() const {
-    if (asks.empty()) return -1;
+    if (asks.empty()) return EMPTY_ASK;
     std::list<Order> f = (*asks.begin()).second;
-    return f.front().m_order_id;
+    return f.front().m_price;
 }

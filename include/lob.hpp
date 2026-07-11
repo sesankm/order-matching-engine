@@ -5,6 +5,9 @@
 #include <list>
 #include "order.hpp"
 
+#define EMPTY_ASK 0
+#define EMPTY_BID std::numeric_limits<std::uint64_t>::max()
+
 auto inline comparator = [](const auto& f1, const auto& f2) { return f1 > f2; };
 
 /* makes it more clear what we're storing in
@@ -26,6 +29,8 @@ public:
     void cancelOrder(order_id id);
     void updateOrder(order_id id);
     Order getOrder(order_id id) const;
+
+    void cleanFilledOrders();
 
     std::uint64_t getBestBid() const;
     std::uint64_t getBestAsk() const;
