@@ -13,7 +13,9 @@ void Server::serve_conn(int desc) {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size > 0) {
-                std::cout << desc << "> RECEIVED DATA: " << buffer << ". Size recieved: " << buff_size << "\n";
+              std::cout << desc
+                        << "> RECEIVED DATA: "
+                        << buffer << ". Size recieved: " << buff_size << "\n";
                 memset(buffer, 0, BUFF_SIZE);
                 int ret = send(desc, "200", 3, 0);
                 if (ret < 0) {
