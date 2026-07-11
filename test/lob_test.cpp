@@ -1,8 +1,8 @@
 #include "order.hpp"
 #include "lob.hpp"
 #include <cassert>
-#include <iostream>
 
+// TODO: Add gtest later
 int main()
 {
     Lob  l{};
@@ -17,7 +17,9 @@ int main()
     assert(l.getBestAsk() == s_id2);
     assert(l.getBestBid() == b_id3);
 
-    // TODO
-    // assert(l.getOrder(l.getBestAsk()) == 211000);
-    // assert(l.getOrder(l.getBestAsk()) == 221200);
+    assert(l.getOrder(l.getBestAsk()).m_price == 211000);
+    assert(l.getOrder(l.getBestBid()).m_price == 221200);
+
+    l.cancelOrder(s_id2);
+    assert(l.getBestAsk() != s_id2);
 }
