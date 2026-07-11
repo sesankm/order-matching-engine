@@ -2,7 +2,7 @@
 #define LOB_H
 
 #include <map>
-#include <vector>
+#include <list>
 #include "order.hpp"
 
 auto inline comparator = [](const auto& f1, const auto& f2) { return f1 > f2; };
@@ -15,7 +15,7 @@ using order_id = std::uint64_t;
 struct Entry {
     OSide side;
     bucket b;
-    std::vector<Order>::iterator it;
+    std::list<Order>::iterator it;
 };
 
 class Lob {
@@ -31,8 +31,9 @@ public:
     std::uint64_t getBestAsk() const;
 
 private:
-    std::map<bucket, std::vector<Order>, decltype(comparator)> bids {comparator};
-    std::map<bucket, std::vector<Order>> asks;
+    // Giving up vecor's cache locality for O(1) mid container deletions
+    std::map<bucket, std::list<Order>, decltype(comparator)> bids {comparator};
+    std::map<bucket, std::list<Order>> asks;
 
     // O(1) lookup, tells us where the order is
     std::unordered_map<order_id, Entry> lookup; 

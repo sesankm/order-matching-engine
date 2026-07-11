@@ -1,38 +1,42 @@
 #include "lob.hpp"
+#include "order.hpp"
 #include <stdexcept>
 #include <utility>
-#include <iostream>
 
 Lob::Lob() {}
 
+/*
+  TODO: This method works for synchronous processing since orders arrive sequentially.
+  Needs to be updated to serialize order submissions when mutliple threads get involved.
+*/
 std::uint64_t Lob::addOrder(float price, long quantity, OType type, OSide side) {
     Order o {price, quantity, type, side};
 
     bucket   bucket = o.m_price;
     order_id order_id = o.m_order_id;
 
-    /*
-      TODO:
-      - this iterator logic completely breaks when an order is canceled/erased
-      - Use a list instead of vector or use some kind of lazy deletion
-    */
-    std::vector<Order>::iterator it; 
+    std::list<Order>::iterator it; 
     if (side == OSide::BUY)
-        it = bids[price].insert(bids[price].end(), std::move(o));
+        it = bids[bucket].insert(bids[bucket].end(), std::move(o));
     else
-        it = asks[price].insert(asks[price].end(), std::move(o));
+        it = asks[bucket].insert(asks[bucket].end(), std::move(o));
 
-    lookup.emplace(order_id, Entry {side, bucket, bids[price].end()});
+    lookup.emplace(order_id, Entry {side, bucket, it});
     return order_id;
 }
 
 void Lob::cancelOrder(order_id id) {
-    throw std::runtime_error("Not implemented yet");
+    Entry e = lookup.at(id);
+    if (e.side == OSide::BUY)
+        bids.at(e.b).erase(e.it);
+    else
+        asks.at(e.b).erase(e.it);
+    lookup.erase(id);
 }
 
 Order Lob::getOrder(order_id id) const {
-    // Need to update lookup to also store an iterator to make this an O(1) lookup
-    throw std::runtime_error("Not implemented yet");
+    Entry e = lookup.at(id);
+    return *e.it;
 }
 
 void Lob::updateOrder(order_id id) {
@@ -41,11 +45,11 @@ void Lob::updateOrder(order_id id) {
 
 
 std::uint64_t Lob::getBestBid() const {
-    std::vector<Order> f = (*bids.begin()).second;
-    return f.at(0).m_order_id;
+    std::list<Order> f = (*bids.begin()).second;
+    return f.front().m_order_id;
 }
 
 std::uint64_t Lob::getBestAsk() const {
-    std::vector<Order> f = (*asks.begin()).second;
-    return f.at(0).m_order_id;
+    std::list<Order> f = (*asks.begin()).second;
+    return f.front().m_order_id;
 }
