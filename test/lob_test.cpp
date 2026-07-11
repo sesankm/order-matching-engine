@@ -2,6 +2,8 @@
 #include "lob.hpp"
 #include <cassert>
 
+#include <iostream>
+
 // TODO: Add gtest later
 int main()
 {
@@ -14,12 +16,13 @@ int main()
     long s_id2 = l.addOrder(21.10, 100, OType::LIMIT, OSide::SELL);
     long s_id3 = l.addOrder(23.12, 100, OType::LIMIT, OSide::SELL);
 
-    assert(l.getBestAsk() == s_id2);
-    assert(l.getBestBid() == b_id3);
-
-    assert(l.getOrder(l.getBestAsk()).m_price == 211000);
-    assert(l.getOrder(l.getBestBid()).m_price == 221200);
+    assert(l.getBestAsk() == Order::get_price(21.10));
+    assert(l.getBestBid() == Order::get_price(22.12));
 
     l.cancelOrder(s_id2);
-    assert(l.getBestAsk() != s_id2);
+    assert(l.getBestAsk() != Order::get_price(21.10));
+
+    l.cancelOrder(s_id);
+    l.cancelOrder(s_id3);
+    assert(l.getBestAsk() != EMPTY_ASK);
 }

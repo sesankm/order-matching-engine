@@ -1,3 +1,4 @@
+#include "lob.hpp"
 #include "order.hpp"
 #include "matching_engine.hpp"
 #include <cassert>
@@ -21,6 +22,13 @@ int main()
     assert(me.lob.bids[Order::get_price(8.0)].size() == 0);
     assert(me.lob.asks.empty() == false);
 
-    me.submitOrder(3.0, 20, OType::LIMIT, OSide::SELL);
+    me.submitOrder(3.0, 1, OType::LIMIT, OSide::SELL);
+    assert(me.lob.asks.contains(Order::get_price(3.0)) == false);
+
+    assert(me.lob.getBestBid() == Order::get_price(4.5));
+    me.submitOrder(3.0, 1000, OType::LIMIT, OSide::SELL);
     assert(me.lob.asks.contains(Order::get_price(3.0)) == true);
+
+    assert(me.lob.getBestAsk() == Order::get_price(3));
+    assert(me.lob.getBestBid() == EMPTY_BID);
 }
