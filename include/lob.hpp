@@ -30,10 +30,11 @@ public:
     std::uint64_t getBestBid() const;
     std::uint64_t getBestAsk() const;
 
-private:
     // Giving up vecor's cache locality for O(1) mid container deletions
     std::map<bucket, std::list<Order>, decltype(comparator)> bids {comparator};
     std::map<bucket, std::list<Order>> asks;
+
+private:
 
     // O(1) lookup, tells us where the order is
     std::unordered_map<order_id, Entry> lookup; 
