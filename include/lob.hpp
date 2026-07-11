@@ -7,6 +7,13 @@
 
 auto inline comparator = [](const auto& f1, const auto& f2) { return f1 > f2; };
 
+/* makes it more clear what we're storing in
+   bid/ask and lookup maps */
+using bucket  = long; 
+using order_id = long;
+
+struct Entry {};
+
 class Lob {
 public:
     Lob();
@@ -19,11 +26,11 @@ public:
     std::uint64_t getBestAsk() const;
 
 private:
-    std::map<long, std::vector<Order>, decltype(comparator)> bids {comparator};
-    std::map<long, std::vector<Order>> asks;
+    std::map<bucket, std::vector<Order>, decltype(comparator)> bids {comparator};
+    std::map<bucket, std::vector<Order>> asks;
 
     // O(1) lookup, tells us where the order is
-    std::unordered_map<long, OSide> lookup; 
+    std::unordered_map<order_id, OSide> lookup; 
 };
 
 #endif
