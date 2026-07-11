@@ -20,16 +20,16 @@
  */
 
 class MatchingEngine {
-    Lob lob {};
 
 public:
+    Lob lob {};
     MatchingEngine();
     void submitOrder(float price, long quantity, OType type, OSide side); 
 
 private:
     void fill();
-    void walkOppositeSide();
-    bool doesCross();
+    void walkOppositeSide(OSide side, std::uint64_t price, long& quantity);
+    bool doesCross(OSide side, std::uint64_t price);
 };
 
 #endif
