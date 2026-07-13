@@ -25,6 +25,7 @@ public:
     Lob lob {};
     MatchingEngine();
     void submitOrder(float price, long quantity, OType type, OSide side); 
+    void submitOrder(Order&& o);
 
 private:
     void fill();

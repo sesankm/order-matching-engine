@@ -18,6 +18,17 @@ void MatchingEngine::submitOrder(float price,
     }
 }
 
+
+void MatchingEngine::submitOrder(Order&& o) {
+    if (doesCross(o.m_side, o.m_price)) {
+        walkOppositeSide(o.m_side, o.m_price, o.m_quantity);
+    }
+
+    if (o.m_quantity > 0) {
+        lob.addOrder(o);
+    }
+}
+
 bool MatchingEngine::doesCross(const OSide side, const std::uint64_t price) const {
     if (side == OSide::BUY) {
         std::uint64_t best = lob.getBestAsk();
