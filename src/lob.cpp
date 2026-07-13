@@ -26,6 +26,20 @@ std::uint64_t Lob::addOrder(float price, long quantity, OType type, OSide side) 
     return order_id;
 }
 
+std::uint64_t Lob::addOrder(Order& o) {
+    bucket   bucket = o.m_price;
+    order_id order_id = o.m_order_id;
+
+    std::list<Order>::iterator it;
+    if (o.m_side == OSide::BUY)
+        it = bids[bucket].insert(bids[bucket].end(), std::move(o));
+    else
+        it = asks[bucket].insert(asks[bucket].end(), std::move(o));
+
+    lookup.emplace(order_id, Entry {o.m_side, bucket, it});
+    return order_id;
+}
+
 void Lob::cancelOrder(order_id id) {
     Entry e = lookup.at(id);
     if (e.side == OSide::BUY) {

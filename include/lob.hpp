@@ -25,6 +25,7 @@ class Lob {
 public:
     Lob();
     std::uint64_t addOrder(float price, long quantity, OType type, OSide side);
+    std::uint64_t addOrder(Order& o);
 
     void cancelOrder(order_id id);
     void updateOrder(order_id id);
