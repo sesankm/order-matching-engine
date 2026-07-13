@@ -29,7 +29,8 @@ public:
 private:
     void fill();
     void walkOppositeSide(OSide side, std::uint64_t price, long& quantity);
-    bool doesCross(OSide side, std::uint64_t price);
+    void walkOppositeSide(long &quantity, auto& buckets, auto& cmp);
+    bool doesCross(OSide side, std::uint64_t price) const;
 };
 
 #endif
