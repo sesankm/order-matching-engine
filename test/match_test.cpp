@@ -31,4 +31,9 @@ int main()
 
     assert(me.lob.getBestAsk() == Order::get_price(3));
     assert(me.lob.getBestBid() == EMPTY_BID);
+
+
+    me.submitOrder(100000.0, 2000, OType::LIMIT, OSide::BUY);
+    assert(me.lob.getBestBid() == Order::get_price(100000.0));
+    assert(me.lob.getBestAsk() == EMPTY_ASK);
 }
