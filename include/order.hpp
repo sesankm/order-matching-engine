@@ -23,10 +23,10 @@ public:
     long m_quantity;
     std::uint64_t m_order_id;
     std::uint64_t m_price;
+    OSide m_side;
 
 private:
     OType m_type;
-    OSide m_side;
 
     std::uint64_t m_timestamp;
 
