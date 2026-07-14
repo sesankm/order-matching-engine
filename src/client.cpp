@@ -1,6 +1,6 @@
 #include "client.hpp"
 #include <chrono>
-#include <exception>
+#include <fstream>
 #include <iostream>
 #include <thread>
 
@@ -13,36 +13,27 @@ Client::Client(int addr_family, int socket_type, int flags, int port)
 void Client::operator()() {
     std::atomic<int> total_messages_sent { 0 };
     std::atomic<size_t> total_bytes_sent { 0 };
-    std::atomic<size_t> total_bytes_recv { 0 };
     std::string input {};
 
     std::atomic<int> active_threads { 0 };
+    std::ifstream fstream {"../input/input.txt"};
 
-    while(1) {
-        std::cout << ">> ";
-        std::getline(std::cin, input);
-        if (input.size() <= 0) { break; }
-
+    while (getline(fstream, input)) {
         ++active_threads;
         try {
-            std::thread {
-                [this, input, &total_bytes_recv, &total_bytes_sent, &total_messages_sent, &active_threads]() {
-                    char buffer[BUFF_SIZE];
-                    size_t sent_size = send(socket_desc, input.data(), input.size(), 0);
-                    /* This is kind of a socket race condition. Current thread might read a message
-                    that the server sent in response to a different thread's send call.
-                    It's only used to track total data sent/recv, so it wont really cause issues. */
-                    size_t recv_size = recv(socket_desc, buffer, BUFF_SIZE, 0);
-                    total_bytes_recv += recv_size;
+            std::thread{
+                [this, &total_bytes_sent, &total_messages_sent, &active_threads](std::string input) {
+                    input.push_back('\n');
+                    const size_t sent_size = send(socket_desc, input.data(), input.size(), 0);
                     total_bytes_sent += sent_size;
                     ++total_messages_sent;
                     --active_threads;
-                }
+                }, input
             }.detach();
         } catch (...) {
             --active_threads;
         }
-
+        input.clear();
     }
 
     while (active_threads > 0) {
@@ -51,9 +42,8 @@ void Client::operator()() {
     }
 
     std::cout << "Closing client. "
-              << "Total messages sent: "    << total_messages_sent
-              << ", total bytes sent: "     << total_bytes_sent
-              << ", total bytes recieved: " << total_bytes_recv << "\n";
+              << "Total messages sent: " << total_messages_sent
+              << ", total bytes sent: "  << total_bytes_sent << "\n";
 
     close(socket_desc);
 }
