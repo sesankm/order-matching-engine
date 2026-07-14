@@ -1,27 +1,33 @@
 #include "server.hpp"
 #include <iostream>
 #include <thread>
+#include "message_parser.hpp"
 
 Server::Server(int addr_family, int socket_type, int flags, int port)
     : Peer { addr_family, socket_type, flags, port } {
-    Peer::sock_syscall(bind, socket_desc, info->ai_addr, info->ai_addrlen);
-    Peer::sock_syscall(listen, socket_desc, 20);
+    sock_syscall(bind, socket_desc, info->ai_addr, info->ai_addrlen);
+    sock_syscall(listen, socket_desc, 20);
 }
 
+const char* CONF_MSG = "Order placed.";
+const char* ERR_MSG  = "Unable to place order.";
+
 void Server::serve_conn(int desc) {
-    auto serve = [desc]() {
+    auto serve = [desc, this]() {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size > 0) {
               std::cout << desc
                         << "> RECEIVED DATA: "
                         << buffer << ". Size recieved: " << buff_size << "\n";
-                memset(buffer, 0, BUFF_SIZE);
-                int ret = send(desc, "200", 3, 0);
-                if (ret < 0) {
-                    throw std::runtime_error(strerror(errno));
+                try {
+                    Order o = MessageParser::parse(buffer);
+                    orderMatcher.submitOrder(std::move(o));
+                    memset(buffer, 0, BUFF_SIZE);
+                    send(desc, CONF_MSG, strlen(CONF_MSG), 0);
+                } catch (std::runtime_error& e) {
+                    send(desc, ERR_MSG, strlen(ERR_MSG), 0);
                 }
-                std::cout << desc << "> Served\n\n";
             } else {
                 break;
             }
