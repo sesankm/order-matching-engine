@@ -9,25 +9,28 @@ Server::Server(int addr_family, int socket_type, int flags, int port)
     sock_syscall(listen, socket_desc, 20);
 }
 
-const char* CONF_MSG = "Order placed.";
-const char* ERR_MSG  = "Unable to place order.";
+void Server::message_processor() {
+    while (1) {
+        while (auto it = back_buffer.find('\n')) {
+            if (it == std::string::npos) { continue; }
+            if (back_buffer.size() > 1) { ++it; }
+            std::lock_guard l {mut};
+            std::cout << back_buffer.substr(0, it);
+            Order o = MessageParser::parse(back_buffer.substr(0, it));
+            orderMatcher.submitOrder(std::move(o));
+            back_buffer.erase(0, it);
+        }
+    }
+}
 
 void Server::serve_conn(int desc) {
-    auto serve = [desc, this]() {
+    auto serve = [desc, this] {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size > 0) {
-              std::cout << desc
-                        << "> RECEIVED DATA: "
-                        << buffer << ". Size recieved: " << buff_size << "\n";
-                try {
-                    Order o = MessageParser::parse(buffer);
-                    orderMatcher.submitOrder(std::move(o));
-                    memset(buffer, 0, BUFF_SIZE);
-                    send(desc, CONF_MSG, strlen(CONF_MSG), 0);
-                } catch (std::runtime_error& e) {
-                    send(desc, ERR_MSG, strlen(ERR_MSG), 0);
-                }
+                std::lock_guard l {mut};
+                back_buffer.append(buffer, buff_size);
+                memset(buffer, 0, BUFF_SIZE);
             } else {
                 break;
             }
@@ -41,10 +44,10 @@ void Server::serve_conn(int desc) {
 }
 
 void Server::operator()() {
-    struct sockaddr client_addr {};
+    sockaddr client_addr {};
     socklen_t client_len { 0 };
-    int counter {0};
 
+    //std::thread processor { [this] { message_processor(); } };
     while(1) {
         accept_desc = accept(socket_desc, &client_addr, &client_len);
         std::cout << "** Accepted connection: " << accept_desc << "\n\n";

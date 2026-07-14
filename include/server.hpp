@@ -6,8 +6,14 @@
 
 class Server : public Peer {
     MatchingEngine orderMatcher;
+
+    std::string back_buffer {};
     int accept_desc {-1};
+
+    std::mutex mut;
+
     void serve_conn(int desc);
+    void message_processor();
 
 public:
     Server(int, int, int, int);
