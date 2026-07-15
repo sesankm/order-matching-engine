@@ -93,3 +93,10 @@ std::uint64_t Lob::getBestAsk() const {
     std::list<Order> f = (*asks.begin()).second;
     return f.front().m_price;
 }
+
+void Lob::dump() {
+    std::cout << "LOB DEBUG :\n\tTotal Resting Orders - "
+            << lookup.size()
+            << "\n\tBids Price Levels - " << bids.size()
+            << "\n\tAsks Price Levels - " << asks.size() << "\n";
+}

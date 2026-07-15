@@ -32,6 +32,7 @@ public:
     Order getOrder(order_id id) const;
 
     void cleanFilledOrders();
+    void dump();
 
     std::uint64_t getBestBid() const;
     std::uint64_t getBestAsk() const;
@@ -41,9 +42,8 @@ public:
     std::map<bucket, std::list<Order>> asks;
 
 private:
-
     // O(1) lookup, tells us where the order is
-    std::unordered_map<order_id, Entry> lookup; 
+    std::unordered_map<order_id, Entry> lookup;
 };
 
 #endif
