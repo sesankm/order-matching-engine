@@ -21,6 +21,10 @@ set(SRC
 add_executable(server src/run_server.cpp ${SRC})
 add_executable(client src/run_client.cpp ${SRC})
 
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fsanitize=address,undefined -fno-omit-frame-pointer")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address,undefined")
+
 add_executable(lobtest   test/lob_test.cpp   ${SRC})
 add_executable(matchtest test/match_test.cpp ${SRC})
 
