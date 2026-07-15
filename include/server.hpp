@@ -10,10 +10,11 @@ class Server : public Peer {
     std::string back_buffer {};
     int accept_desc {-1};
 
-    std::mutex mut;
+    std::condition_variable cond_var;
+    std::mutex write_mut;
 
-    void serve_conn(int desc);
-    void message_processor();
+    void msg_reader(int desc);
+    void msg_processor();
 
 public:
     Server(int, int, int, int);

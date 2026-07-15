@@ -9,26 +9,31 @@ Server::Server(int addr_family, int socket_type, int flags, int port)
     sock_syscall(listen, socket_desc, 20);
 }
 
-void Server::message_processor() {
+void Server::msg_processor() {
     while (1) {
         while (auto it = back_buffer.find('\n')) {
-            if (it == std::string::npos) { continue; }
+            if (it == std::string::npos) {
+                std::unique_lock ul{write_mut};
+                cond_var.wait(ul);
+                continue;
+            }
             if (back_buffer.size() > 1) { ++it; }
-            std::lock_guard l {mut};
-            std::cout << back_buffer.substr(0, it);
+            std::lock_guard l { write_mut };
             Order o = MessageParser::parse(back_buffer.substr(0, it));
             orderMatcher.submitOrder(std::move(o));
             back_buffer.erase(0, it);
+            orderMatcher.lob.dump();
         }
     }
 }
 
-void Server::serve_conn(int desc) {
+void Server::msg_reader(int desc) {
     auto serve = [desc, this] {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size > 0) {
-                std::lock_guard l {mut};
+                std::lock_guard l {write_mut};
+                cond_var.notify_one();
                 back_buffer.append(buffer, buff_size);
                 memset(buffer, 0, BUFF_SIZE);
             } else {
@@ -47,12 +52,12 @@ void Server::operator()() {
     sockaddr client_addr {};
     socklen_t client_len { 0 };
 
-    //std::thread processor { [this] { message_processor(); } };
+    std::thread processor { [this] { msg_processor(); } };
     while(1) {
         accept_desc = accept(socket_desc, &client_addr, &client_len);
         std::cout << "** Accepted connection: " << accept_desc << "\n\n";
         if (accept_desc < 0) { throw std::runtime_error(strerror(errno)); }
-        serve_conn(accept_desc);
+        msg_reader(accept_desc);
     }
 }
 
