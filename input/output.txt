@@ -1,0 +1,63 @@
+** Accepted connection: 4
+
+LOB DEBUG :
+	Total Resting Orders - 1
+	Bids Price Levels - 1
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 2
+	Bids Price Levels - 2
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 1
+	Bids Price Levels - 1
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 2
+	Bids Price Levels - 1
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 2
+	Bids Price Levels - 1
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 3
+	Bids Price Levels - 2
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 4
+	Bids Price Levels - 3
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 3
+	Bids Price Levels - 2
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 4
+	Bids Price Levels - 2
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 4
+	Bids Price Levels - 2
+	Asks Price Levels - 1
+LOB DEBUG :
+	Total Resting Orders - 5
+	Bids Price Levels - 2
+	Asks Price Levels - 2
+LOB DEBUG :
+	Total Resting Orders - 4
+	Bids Price Levels - 3
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 4
+	Bids Price Levels - 3
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 5
+	Bids Price Levels - 4
+	Asks Price Levels - 0
+LOB DEBUG :
+	Total Resting Orders - 5
+	Bids Price Levels - 4
+	Asks Price Levels - 0
+Closing connection: 4
