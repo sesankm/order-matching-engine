@@ -59,16 +59,16 @@ void Lob::cleanFilledOrders() {
         if (it->second.empty()) {
             it = bids.erase(it);
         } else {
-            it++;
+            ++it;
         }
     }
 
     auto it2 = asks.begin();
     while (it2 != asks.end()) {
         if (it2->second.empty()) {
-            it2 = bids.erase(it);
+            it2 = asks.erase(it2);
         } else {
-            it2++;
+            ++it2;
         }
     }
 }
