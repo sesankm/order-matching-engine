@@ -84,14 +84,12 @@ void Lob::updateOrder(order_id id) {
 
 std::uint64_t Lob::getBestBid() const {
     if (bids.empty()) return EMPTY_BID;
-    std::list<Order> f = (*bids.begin()).second;
-    return f.front().m_price;
+    return bids.begin()->second.front().m_price;
 }
 
 std::uint64_t Lob::getBestAsk() const {
     if (asks.empty()) return EMPTY_ASK;
-    std::list<Order> f = (*asks.begin()).second;
-    return f.front().m_price;
+    return asks.begin()->second.front().m_price;
 }
 
 void Lob::dump() {
