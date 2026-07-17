@@ -11,17 +11,17 @@ Server::Server(int addr_family, int socket_type, int flags, int port)
 
 void Server::msg_processor() {
     while (1) {
-        while (auto it = back_buffer.find('\n')) {
+        while (auto it = shared_buffer.find('\n')) {
             if (it == std::string::npos) {
                 std::unique_lock ul{write_mut};
                 cond_var.wait(ul);
                 continue;
             }
-            if (back_buffer.size() > 1) { ++it; }
+            if (shared_buffer.size() > 1) { ++it; }
             std::lock_guard l { write_mut };
-            Order o = MessageParser::parse(back_buffer.substr(0, it));
+            Order o = MessageParser::parse(shared_buffer.substr(0, it));
             orderMatcher.submitOrder(std::move(o));
-            back_buffer.erase(0, it);
+            shared_buffer.erase(0, it);
             orderMatcher.lob.dump();
         }
     }
@@ -37,7 +37,11 @@ void Server::msg_reader(int desc) {
             if (buff_size > 0) {
                 std::lock_guard l {write_mut};
                 cond_var.notify_one();
-                back_buffer.append(buffer, buff_size);
+                /* Message size is currently small enough to where each recv is pretty much guaranteed to return a whole line.
+                 * More threads, and bigger of message sizes increases the chance of messages between different
+                 * threads getting interleaved, which would corrupt the shared_buffer.
+                 */
+                shared_buffer.append(buffer, buff_size);
                 memset(buffer, 0, BUFF_SIZE);
             } else {
                 break;
