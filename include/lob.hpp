@@ -34,8 +34,8 @@ public:
     void cleanFilledOrders();
     void dump();
 
-    std::uint64_t getBestBid() const;
-    std::uint64_t getBestAsk() const;
+    std::optional<std::uint64_t> getBestBid() const;
+    std::optional<std::uint64_t> getBestAsk() const;
 
     // Giving up vecor's cache locality for O(1) mid container deletions
     std::map<bucket, std::list<Order>, decltype(comparator)> bids {comparator};

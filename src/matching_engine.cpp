@@ -31,11 +31,11 @@ void MatchingEngine::submitOrder(Order&& o) {
 
 bool MatchingEngine::doesCross(const OSide side, const std::uint64_t price) const {
     if (side == OSide::BUY) {
-        std::uint64_t best = lob.getBestAsk();
-        return best > 0 && price >= best;
+        std::optional<std::uint64_t> best = lob.getBestAsk();
+        return best && price >= best.value();
     }
-    std::uint64_t best = lob.getBestBid();
-    return best > 0 && price <= lob.getBestBid();
+    std::optional<std::uint64_t> best = lob.getBestBid();
+    return best && price <= best.value();
 }
 
 void MatchingEngine::walkOppositeSide(OSide side, std::uint64_t price, long &quantity) {

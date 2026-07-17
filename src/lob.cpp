@@ -82,13 +82,13 @@ void Lob::updateOrder(order_id id) {
     throw std::runtime_error("Not implemented yet");
 }
 
-std::uint64_t Lob::getBestBid() const {
-    if (bids.empty()) return EMPTY_BID;
+std::optional<std::uint64_t> Lob::getBestBid() const {
+    if (bids.empty()) return std::nullopt;
     return bids.begin()->second.front().m_price;
 }
 
-std::uint64_t Lob::getBestAsk() const {
-    if (asks.empty()) return EMPTY_ASK;
+std::optional<std::uint64_t> Lob::getBestAsk() const {
+    if (asks.empty()) return std::nullopt;
     return asks.begin()->second.front().m_price;
 }
 
