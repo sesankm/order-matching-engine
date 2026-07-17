@@ -39,7 +39,7 @@ bool MatchingEngine::doesCross(const OSide side, const std::uint64_t price) cons
 }
 
 void MatchingEngine::walkOppositeSide(OSide side, std::uint64_t price, long &quantity) {
-    auto cmp = [side, price](int bucket) {
+    auto cmp = [side, price](std::uint64_t bucket) {
         return side == OSide::SELL ? bucket < price : bucket > price;
     };
 
