@@ -60,12 +60,9 @@ void Server::msg_reader(int desc) {
 }
 
 void Server::operator()() {
-    sockaddr client_addr {};
-    socklen_t client_len { 0 };
-
     std::thread processor { [this] { msg_processor(); } };
     while(1) {
-        int desc = accept(socket_desc, &client_addr, &client_len);
+        const int desc = accept(socket_desc, nullptr, nullptr);
         msg_reader(desc);
     }
 }
