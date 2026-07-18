@@ -11,8 +11,12 @@ Server::Server(int addr_family, int socket_type, int flags, int port)
 
 void Server::msg_processor() {
     while (1) {
+        /* TODO: Fix the realloc race condition
+         * shared_buffer.append() in the reader thread could trigger a realloc, which
+         * could invalidate shared_buffer leading to UB. */
         while (auto it = shared_buffer.find('\n')) {
             if (it == std::string::npos) {
+                // if nothing's in the buffer, wait for notify from reader, try to read buffer again
                 std::unique_lock ul{write_mut};
                 cond_var.wait(ul);
                 continue;
