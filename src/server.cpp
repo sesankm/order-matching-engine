@@ -30,7 +30,6 @@ void Server::msg_processor() {
 void Server::msg_reader(int desc) {
     if (desc < 0) { throw std::runtime_error(strerror(errno)); }
     std::cout << "** Accepted connection: " << desc << "\n\n";
-    conn_descs.push_back(desc);
     auto serve = [desc, this] {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
@@ -49,10 +48,6 @@ void Server::msg_reader(int desc) {
         }
         std::cout << "Closing connection: " + std::to_string(desc) << "\n\n";
         close(desc);
-        if (const auto it = std::ranges::find(conn_descs, desc);
-            it != conn_descs.end()) {
-            conn_descs.erase(it);
-        }
     };
 
     std::thread t1 { serve };
@@ -68,5 +63,7 @@ void Server::operator()() {
 }
 
 Server::~Server() {
-    for (const int cd: conn_descs) { close(cd); }
+    // First implement a way to break the infinite loop in operator()(),
+    //  then update this. Currently, it's dead code.
+    // for (const int cd: conn_descs) { close(cd); }
 }
