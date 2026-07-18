@@ -15,6 +15,7 @@ set(SRC
         src/peer.cpp
         src/matching_engine.cpp
         src/message_parser.cpp
+        src/ring_buffer.cpp
 )
 
 
@@ -35,6 +36,8 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(googletest)
-add_executable(run_tests test/test_message_parser.cpp ${SRC})
+add_executable(mp_test test/test_message_parser.cpp ${SRC})
+target_link_libraries(mp_test PRIVATE gtest_main)
 
-target_link_libraries(run_tests PRIVATE gtest_main)
+add_executable(rb_test test/ring_buffer_test.cpp ${SRC})
+target_link_libraries(rb_test PRIVATE gtest_main)
