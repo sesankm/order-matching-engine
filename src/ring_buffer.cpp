@@ -4,7 +4,7 @@
 RingBuffer::RingBuffer(size_t cap) 
 	: read_ind {0}
 	, write_ind{0}
-	, buffer(std::vector<std::string>(cap, std::string{})) {}
+	, buffer(cap + 1, std::string{}) {}
 
 std::optional<std::string> RingBuffer::read() {
 	if (!isEmpty()) {
