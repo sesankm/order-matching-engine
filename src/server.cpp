@@ -1,54 +1,48 @@
 #include "server.hpp"
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include "message_parser.hpp"
 
 Server::Server(int addr_family, int socket_type, int flags, int port)
-    : Peer { addr_family, socket_type, flags, port } {
+    : Peer { addr_family, socket_type, flags, port }, ringBuffer(128) {
     sock_syscall(bind, socket_desc, info->ai_addr, info->ai_addrlen);
     sock_syscall(listen, socket_desc, 20);
 }
 
 void Server::msg_processor() {
+    /* TODO: Fix the realloc race condition
+     * shared_buffer.append() in the reader thread could trigger a realloc, which
+     * could invalidate shared_buffer leading to UB. */
     while (1) {
-        /* TODO: Fix the realloc race condition
-         * shared_buffer.append() in the reader thread could trigger a realloc, which
-         * could invalidate shared_buffer leading to UB. */
-        while (auto it = shared_buffer.find('\n')) {
-            if (it == std::string::npos) {
-                // if nothing's in the buffer, wait for notify from reader, try to read buffer again
-                std::unique_lock ul{write_mut};
-                cond_var.wait(ul);
-                continue;
+        std::unique_lock ul{write_mut};
+        cond_var.wait(ul); 
+        while(!ringBuffer.isEmpty()) {
+            auto message = ringBuffer.read();
+            if (message.has_value()) {
+                Order o = MessageParser::parse(message.value());
+                orderMatcher.submitOrder(std::move(o));
             }
-            if (shared_buffer.size() > 1) { ++it; }
-            std::lock_guard l { write_mut };
-            Order o = MessageParser::parse(shared_buffer.substr(0, it));
-            orderMatcher.submitOrder(std::move(o));
-            shared_buffer.erase(0, it);
-            orderMatcher.lob.dump();
         }
+        orderMatcher.lob.dump();
     }
 }
 
 void Server::msg_reader(int desc) {
+    const char* delim = "\n";
     if (desc < 0) { throw std::runtime_error(strerror(errno)); }
     std::cout << "** Accepted connection: " << desc << "\n\n";
-    auto serve = [desc, this] {
+    auto serve = [desc, delim, this] {
         thread_local char buffer[BUFF_SIZE];
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
-            if (buff_size > 0) {
-                std::lock_guard l {write_mut};
+            if (buff_size <= 0) { break; }
+            char* token = strtok(buffer, delim);
+            while(token != nullptr) {
+                ringBuffer.write(token);
                 cond_var.notify_one();
-                /* Message size is currently small enough to where each recv is pretty much guaranteed to return a whole line.
-                 * More threads, and bigger of message sizes increases the chance of messages between different
-                 * threads getting interleaved, which would corrupt the shared_buffer.
-                 */
-                shared_buffer.append(buffer, buff_size);
-                memset(buffer, 0, BUFF_SIZE);
-            } else {
-                break;
+                token = strtok(nullptr, delim);
             }
+            memset(buffer, 0, BUFF_SIZE);
         }
         std::cout << "Closing connection: " + std::to_string(desc) << "\n\n";
         close(desc);
