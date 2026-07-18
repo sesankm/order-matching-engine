@@ -12,10 +12,10 @@ private:
 
 public:
 	RingBuffer(size_t cap);
-	std::string& read();
-	void write(std::string);
-	bool isEmpty();
-	bool isFull();
+	std::optional<std::string> read();
+	void write(const std::string&);
+	bool isEmpty() const;
+	bool isFull() const;
 };
 
 #endif
