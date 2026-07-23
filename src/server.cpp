@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include <cstring>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -11,9 +12,6 @@ Server::Server(int addr_family, int socket_type, int flags, int port)
 }
 
 void Server::msg_processor() {
-    /* TODO: Fix the realloc race condition
-     * shared_buffer.append() in the reader thread could trigger a realloc, which
-     * could invalidate shared_buffer leading to UB. */
     while (1) {
         std::unique_lock ul{write_mut};
         cond_var.wait(ul); 
@@ -34,15 +32,26 @@ void Server::msg_reader(int desc) {
     std::cout << "** Accepted connection: " << desc << "\n\n";
     auto serve = [desc, delim, this] {
         thread_local char buffer[BUFF_SIZE];
+        std::string carry {};
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size <= 0) { break; }
-            char* token = strtok(buffer, delim);
-            while(token != nullptr) {
-                ringBuffer.write(token);
+
+            std::string message { carry };
+            message.append(buffer, buff_size);
+
+            auto it = std::find(message.begin(), message.end(), '\n');
+            for (; it != message.end(); it = std::find(message.begin(), message.end(), '\n')) {
+                ringBuffer.write(std::string { message.begin(), it });
                 cond_var.notify_one();
-                token = strtok(nullptr, delim);
+                message.erase(message.begin(), it + 1);
             }
+
             memset(buffer, 0, BUFF_SIZE);
+            if (message.size() > 0) {
+                carry = message;
+            } else {
+                carry.clear();
+            }
         }
         std::cout << "Closing connection: " + std::to_string(desc) << "\n\n";
         close(desc);
