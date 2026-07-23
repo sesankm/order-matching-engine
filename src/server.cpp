@@ -36,7 +36,7 @@ void Server::msg_reader(int desc) {
         while (int buff_size = recv(desc, buffer, BUFF_SIZE, 0)) {
             if (buff_size <= 0) { break; }
 
-            std::string message { carry };
+            std::string message = std::move(carry);
             message.append(buffer, buff_size);
 
             for (auto it = std::find(message.begin(), message.end(), '\n'); 
@@ -48,7 +48,6 @@ void Server::msg_reader(int desc) {
                 message.erase(message.begin(), it + 1);
             }
 
-            memset(buffer, 0, BUFF_SIZE);
             carry = message;
         }
         std::cout << "Closing connection: " + std::to_string(desc) << "\n\n";
