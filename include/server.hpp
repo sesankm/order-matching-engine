@@ -8,7 +8,6 @@
 class Server : public Peer {
     MatchingEngine orderMatcher;
     RingBuffer ringBuffer;
-    std::string shared_buffer {};
     std::condition_variable cond_var;
     std::mutex write_mut;
 
