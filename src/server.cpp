@@ -39,19 +39,17 @@ void Server::msg_reader(int desc) {
             std::string message { carry };
             message.append(buffer, buff_size);
 
-            auto it = std::find(message.begin(), message.end(), '\n');
-            for (; it != message.end(); it = std::find(message.begin(), message.end(), '\n')) {
+            for (auto it = std::find(message.begin(), message.end(), '\n'); 
+                it != message.end(); 
+                it = std::find(message.begin(), message.end(), '\n')) 
+            {
                 ringBuffer.write(std::string { message.begin(), it });
                 cond_var.notify_one();
                 message.erase(message.begin(), it + 1);
             }
 
             memset(buffer, 0, BUFF_SIZE);
-            if (message.size() > 0) {
-                carry = message;
-            } else {
-                carry.clear();
-            }
+            carry = message;
         }
         std::cout << "Closing connection: " + std::to_string(desc) << "\n\n";
         close(desc);
