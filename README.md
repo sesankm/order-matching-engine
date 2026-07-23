@@ -37,7 +37,6 @@ Targets: `server`, `client`, plus test binaries (`lobtest`, `matchtest`, etc.).
 ```
 
 ## Todo
-- Handle messages being split accross multiple recv
 - Generate market depth visual. Something like TOS's L2 table, or some kind of bid/ask spread chart
 - Handle Market orders. Currently, everything is treated like a limit order.
 - Client-side Cancel/Modify support. LOB already has cancelOrder, but client has no way to trigger it
