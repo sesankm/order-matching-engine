@@ -44,9 +44,9 @@ void Server::msg_reader(int desc) {
                 it = std::find(message.begin(), message.end(), '\n')) 
             {
                 ringBuffer.write(std::string { message.begin(), it });
-                cond_var.notify_one();
                 message.erase(message.begin(), it + 1);
             }
+            cond_var.notify_one();
 
             carry = message;
         }
